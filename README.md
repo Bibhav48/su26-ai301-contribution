@@ -3,7 +3,7 @@
 **Contribution Number:** 1  
 **Student:** Bibhav Adhikari  
 **Issue:** [pwndbg/pwndbg #1374](https://github.com/pwndbg/pwndbg/issues/1374)  
-**Status:** Phase I Complete
+**Status:** Phase II Complete
 
 ---
 
@@ -35,7 +35,9 @@ Hitting `Enter` after invoking the `u` command fails to advance the instruction 
 ## Reproduction Process
 
 ### Environment Setup
-*To be completed during Phase II environment configuration.*
+* Operating System: macOS Sequoia (15.x) running on arm64 Apple Silicon.
+* Environment: Local `pwndbg` development environment synced using Python `uv sync --all-groups --all-extras` within `.venv`.
+* Debugger Interface: LLDB REPL backend (`pwndbg-lldb`) initialized pointing to the synced virtualenv.
 
 ### Steps to Reproduce
 1. Launch a debugging target using the local development instance of `pwndbg`.
@@ -44,9 +46,51 @@ Hitting `Enter` after invoking the `u` command fails to advance the instruction 
 4. *Observed result:* The disassembly frame fails to advance to the next instruction sequences.
 
 ### Reproduction Evidence
-- **Commit showing reproduction:** [Pending local environment setup]
-- **Screenshots/logs:** [Pending verification]
-- **My findings:** Initial analysis shows that `CommandObj.check_repeated()` correctly sets `self.repeat = True` globally, confirming the repeat signal is active. However, `nearpc` currently lacks the underlying state tracking logic required to advance the address pointer.
+- **Commit showing reproduction:** [fix-issue-1374 branch on GitHub Fork](https://github.com/Bibhav48/pwndbg/tree/fix-issue-1374)
+- **Screenshots/logs:** 
+  Running `pwndbg-lldb ./test_prog` under `sudo` (to bypass macOS SIP debugger permissions), setting a breakpoint at `main`, disassembling with `u`, and hitting `Enter` (empty prompt):
+  ```text
+  pwndbg-lldb> breakpoint set --name main
+  Breakpoint 1: where = test_prog`main + 12 at test_prog.c:2:9, address = 0x0000000100000334
+  pwndbg-lldb> process launch
+  ... (hits breakpoint) ...
+  pwndbg-lldb> u
+     0x1025a0320 <_mh_execute_header+800>    udf    #0
+     0x1025a0324 <_mh_execute_header+804>    udf    #0
+     0x1025a0328 <main>                      sub    sp, sp, #0x10
+     0x1025a032c <main+4>                    mov    w0, #0              W0 => 0
+     0x1025a0330 <main+8>                    str    wzr, [sp, #0xc]
+  b► 0x1025a0334 <main+12>                   str    wzr, [sp, #8]
+     0x1025a0338 <main+16>                   ldr    w8, [sp, #8]
+     0x1025a033c <main+20>                   add    w8, w8, #1
+     0x1025a0340 <main+24>                   str    w8, [sp, #8]
+     0x1025a0344 <main+28>                   add    sp, sp, #0x10
+     0x1025a0348 <main+32>                   ret   
+   
+     0x1025a034c                             udf    #1
+     0x1025a0350                             udf    #0x1c
+     0x1025a0354                             udf    #0
+     0x1025a0358                             udf    #0x1c
+  pwndbg-lldb> 
+     0x1025a0320 <_mh_execute_header+800>    udf    #0
+     0x1025a0324 <_mh_execute_header+804>    udf    #0
+     0x1025a0328 <main>                      sub    sp, sp, #0x10
+     0x1025a032c <main+4>                    mov    w0, #0              W0 => 0
+     0x1025a0330 <main+8>                    str    wzr, [sp, #0xc]
+  b► 0x1025a0334 <main+12>                   str    wzr, [sp, #8]
+     0x1025a0338 <main+16>                   ldr    w8, [sp, #8]
+     0x1025a033c <main+20>                   add    w8, w8, #1
+     0x1025a0340 <main+24>                   str    w8, [sp, #8]
+     0x1025a0344 <main+28>                   add    sp, sp, #0x10
+     0x1025a0348 <main+32>                   ret   
+   
+     0x1025a034c                             udf    #1
+     0x1025a0350                             udf    #0x1c
+     0x1025a0354                             udf    #0
+     0x1025a0358                             udf    #0x1c
+  pwndbg-lldb>
+  ```
+- **My findings:** Initial analysis shows that `CommandObj.check_repeated()` tries to detect a repeated enter via `pwndbg.dbg.history(1)`. However, under LLDB, the `LLDB.history()` method in `pwndbg/dbg_mod/lldb/__init__.py` is currently stubbed to return `[]`. This prevents custom commands from ever registering the repeat flag under LLDB, resulting in a static printout instead of moving the PC reference.
 
 ---
 
@@ -76,8 +120,8 @@ Using the UMPIRE framework (adapted):
 4. Verify pointer math handles variable-width instruction bounds cleanly across distinct system architectures.
 5. Apply pattern refactoring to cleanup `hexdump` code footprints.
 
-**Implement:** [Pending branch creation]  
-**Review:** [Pending self-review checklist]  
+**Implement:** Active development branch `fix-issue-1374` created and pushed to the fork remote `Bibhav48/pwndbg`.  
+**Review:** Deep architectural review completed. Located stubbed methods in `pwndbg/dbg_mod/lldb/__init__.py` and the command-handling wrapper class `CommandObj`.  
 **Evaluate:** Launch an active session within GDB to manually assert seamless command repetition across a minimum of 10 sequential iterations.
 
 ---
@@ -102,7 +146,7 @@ Using the UMPIRE framework (adapted):
 Identified core logic intersections across `pwndbg/commands/__init__.py` and officially claimed open issue #1374.
 
 ### Week 2 Progress (Current)
-Completed the initial repository tracking, conducted a deep architectural code review of the codebase, identified core logic intersections within `pwndbg/commands/__init__.py`, and officially claimed the open issue.
+Created the active git branch `fix-issue-1374` tracking the remote fork. Confirmed the repeat bug locally on macOS with the LLDB REPL backend using a compiled test binary. Identified the root cause of the repeat issue under LLDB (stubbed `LLDB.history()` method returning `[]`). Designed a centralized `@repeatable` decorator framework for repeatable commands.
 
 ### Week 3 Progress
 *To be updated during execution.*
