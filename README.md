@@ -3,7 +3,7 @@
 **Contribution Number:** 1  
 **Student:** Bibhav Adhikari  
 **Issue:** [pwndbg/pwndbg #1374](https://github.com/pwndbg/pwndbg/issues/1374)  
-**Status:** Phase II Complete
+**Status:** Phase IV: Submitted (Awaiting Review)
 
 ---
 
@@ -186,15 +186,15 @@ I verified the changes using an interactive test script `test_interactive_repeat
 
 ---
 
-## Pull Request / Commit Link
+## Pull Request
 
-**Commit Link:** [`4c4d338`](https://github.com/Bibhav48/pwndbg/commit/4c4d338c6b5ad5de05484d4d76db5bc37383ec46)  
+**PR Link:** [pwndbg/pwndbg #3980](https://github.com/pwndbg/pwndbg/pull/3980)  
 **Description:** This change implements repeat-on-Enter support for custom commands on the LLDB backend. It introduces custom interactive history tracking in the REPL and debugger backend, replaces the stubbed `LLDB.history()`, and adds standard LLDB `get_repeat_command` auto-repeat handler implementation. This enables `nearpc`/`u` (as well as other commands) to seamlessly auto-repeat and advance address references exactly like GDB.
 
 **Maintainer Feedback:**
 *   None yet.
 
-**Status:** Awaiting submission
+**Status:** Awaiting review
 
 ---
 
