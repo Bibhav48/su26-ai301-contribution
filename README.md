@@ -3,6 +3,7 @@
 **Contribution Number:** 1  
 **Student:** Bibhav Adhikari  
 **Issue:** [pwndbg/pwndbg #1374](https://github.com/pwndbg/pwndbg/issues/1374)  
+**Fork:** [Bibhav48/pwndbg](https://github.com/Bibhav48/pwndbg)  
 **Status:** Merged
 
 ---
