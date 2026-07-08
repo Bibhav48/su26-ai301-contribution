@@ -3,7 +3,7 @@
 **Contribution Number:** 1  
 **Student:** Bibhav Adhikari  
 **Issue:** [pwndbg/pwndbg #1374](https://github.com/pwndbg/pwndbg/issues/1374)  
-**Status:** Phase IV: Submitted (Awaiting Review)
+**Status:** Merged
 
 ---
 
